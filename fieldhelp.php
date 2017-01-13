@@ -8,28 +8,61 @@ require_once 'fieldhelp.civix.php';
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
  */
 function fieldhelp_civicrm_buildForm($formName, &$form) {
+  // print_r($formName);
+  // die();
+  switch ($formName) {
+    case 'CRM_Activity_Form_Activity':
+    case 'CRM_Case_Form_Case':
+    case 'CRM_Case_Form_Activity':
+      $settingName = 'fieldhelp_activities';
+      break;
+
+    case 'CRM_Contact_Form_Contact':
+      // TODO currently this breaks for inline forms
+    case 'CRM_Contact_Form_Inline_ContactInfo':
+    case 'CRM_Contact_Form_Inline_CommunicationsPreferences':
+    case 'CRM_Contact_Form_Inline_ContactName':
+    case 'CRM_Contact_Form_Inline_Email':
+    case 'CRM_Contact_Form_Inline_Phone':
+    case 'CRM_Contact_Form_Inline_Address':
+      if ($form->_contactType == 'Organization') {
+        $settingName = 'fieldhelp_organizations';
+      }
+      if ($form->_contactType == 'Individual') {
+        $settingName = 'fieldhelp_individuals';
+      }
+      break;
+
+    default:
+      return;
+  }
   try {
-    $fieldsToAddHelp = civicrm_api3('Setting', 'get', array(
-      'sequential' => 1,
-      'return' => "fieldhelp_fields",
+    $fieldsToAddHelp = civicrm_api3('Setting', 'getvalue', array(
+      'name' => $settingName,
+      'group' => 'fieldhelp',
     ));
   }
   catch (CiviCRM_API3_Exception $e) {
     $error = $e->getMessage();
     CRM_Core_Error::debug_log_message(ts('API Error %1', array(
-      'domain' => 'com.aghstrategies.proratemembership',
+      'domain' => 'com.aghstrategies.fieldhelp',
       1 => $error,
     )));
   }
-  if (!empty($fieldsToAddHelp['values'][0]['fieldhelp_fields'])) {
-    CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
+  if (!empty($fieldsToAddHelp)) {
     $fields = array();
-    foreach ($fieldsToAddHelp['values'][0]['fieldhelp_fields'] as $key => $value) {
+    foreach ($fieldsToAddHelp as $key => $value) {
       if ($form->elementExists($key)) {
+        $fields[$key] = $value;
+      }
+      // weird fields that need special attention
+      elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1') {
         $fields[$key] = $value;
       }
     }
     CRM_Core_Resources::singleton()->addVars('fieldhelp', array('fields' => $fields));
+    CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
+
   }
 }
 /**
