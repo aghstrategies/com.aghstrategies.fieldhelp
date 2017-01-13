@@ -8,7 +8,29 @@ require_once 'fieldhelp.civix.php';
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
  */
 function fieldhelp_civicrm_buildForm($formName, &$form) {
-
+  try {
+    $fieldsToAddHelp = civicrm_api3('Setting', 'get', array(
+      'sequential' => 1,
+      'return' => "fieldhelp_fields",
+    ));
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    $error = $e->getMessage();
+    CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+      'domain' => 'com.aghstrategies.proratemembership',
+      1 => $error,
+    )));
+  }
+  if (!empty($fieldsToAddHelp['values'][0]['fieldhelp_fields'])) {
+    CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
+    $fields = array();
+    foreach ($fieldsToAddHelp['values'][0]['fieldhelp_fields'] as $key => $value) {
+      if ($form->elementExists($key)) {
+        $fields[$key] = $value;
+      }
+    }
+    CRM_Core_Resources::singleton()->addVars('fieldhelp', array('fields' => $fields));
+  }
 }
 /**
  * Implements hook_civicrm_config().
