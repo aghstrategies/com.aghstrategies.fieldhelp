@@ -108,13 +108,7 @@ function fieldhelp_civicrm_pageRun(&$page) {
         if (!empty($fieldsToAddHelp)) {
           $fields = array();
           foreach ($fieldsToAddHelp as $key => $value) {
-            if ($form->elementExists($key)) {
-              $fields[$key] = $value;
-            }
-            // weird fields that need special attention
-            elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1') {
-              $fields[$key] = $value;
-            }
+            $fields[$key] = $value;
           }
           CRM_Core_Resources::singleton()->addVars('fieldhelp', array('fields' => $fields));
           CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
