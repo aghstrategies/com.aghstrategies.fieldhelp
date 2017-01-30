@@ -8,8 +8,6 @@ require_once 'fieldhelp.civix.php';
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
  */
 function fieldhelp_civicrm_buildForm($formName, &$form) {
-  // print_r($formName);
-  // die();
   switch ($formName) {
     case 'CRM_Activity_Form_Activity':
     case 'CRM_Case_Form_Case':
@@ -18,13 +16,6 @@ function fieldhelp_civicrm_buildForm($formName, &$form) {
       break;
 
     case 'CRM_Contact_Form_Contact':
-      // TODO currently this breaks for inline forms
-      // case 'CRM_Contact_Form_Inline_ContactInfo':
-      // case 'CRM_Contact_Form_Inline_CommunicationsPreferences':
-      // case 'CRM_Contact_Form_Inline_ContactName':
-      // case 'CRM_Contact_Form_Inline_Email':
-      // case 'CRM_Contact_Form_Inline_Phone':
-      // case 'CRM_Contact_Form_Inline_Address':
       if ($form->_contactType == 'Organization') {
         $settingName = 'fieldhelp_organizations';
       }
@@ -56,7 +47,7 @@ function fieldhelp_civicrm_buildForm($formName, &$form) {
         $fields[$key] = $value;
       }
       // weird fields that need special attention
-      elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1') {
+      elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1' || $key == 'address_1_location_type_id') {
         $fields[$key] = $value;
       }
     }
