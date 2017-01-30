@@ -19,12 +19,12 @@ function fieldhelp_civicrm_buildForm($formName, &$form) {
 
     case 'CRM_Contact_Form_Contact':
       // TODO currently this breaks for inline forms
-    case 'CRM_Contact_Form_Inline_ContactInfo':
-    case 'CRM_Contact_Form_Inline_CommunicationsPreferences':
-    case 'CRM_Contact_Form_Inline_ContactName':
-    case 'CRM_Contact_Form_Inline_Email':
-    case 'CRM_Contact_Form_Inline_Phone':
-    case 'CRM_Contact_Form_Inline_Address':
+      // case 'CRM_Contact_Form_Inline_ContactInfo':
+      // case 'CRM_Contact_Form_Inline_CommunicationsPreferences':
+      // case 'CRM_Contact_Form_Inline_ContactName':
+      // case 'CRM_Contact_Form_Inline_Email':
+      // case 'CRM_Contact_Form_Inline_Phone':
+      // case 'CRM_Contact_Form_Inline_Address':
       if ($form->_contactType == 'Organization') {
         $settingName = 'fieldhelp_organizations';
       }
@@ -63,6 +63,64 @@ function fieldhelp_civicrm_buildForm($formName, &$form) {
     CRM_Core_Resources::singleton()->addVars('fieldhelp', array('fields' => $fields));
     CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
 
+  }
+}
+/**
+ * Implements hook_civicrm_pageRun().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_pageRun
+ */
+function fieldhelp_civicrm_pageRun(&$page) {
+  if ($page->getVar('_name') == 'CRM_Contact_Page_View_Summary') {
+    if (!empty($page->getVar('_contactId'))) {
+      try {
+        $result = civicrm_api3('Contact', 'getsingle', array(
+          'id' => $page->getVar('_contactId'),
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $error = $e->getMessage();
+        CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+          'domain' => 'com.aghstrategies.fieldhelp',
+          1 => $error,
+        )));
+      }
+      if ($result['contact_type'] == 'Organization') {
+        $settingName = 'fieldhelp_organizations';
+      }
+      if ($result['contact_type'] == 'Individual') {
+        $settingName = 'fieldhelp_individuals';
+      }
+      if (!empty($settingName)) {
+        try {
+          $fieldsToAddHelp = civicrm_api3('Setting', 'getvalue', array(
+            'name' => $settingName,
+            'group' => 'fieldhelp',
+          ));
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          $error = $e->getMessage();
+          CRM_Core_Error::debug_log_message(ts('API Error %1', array(
+            'domain' => 'com.aghstrategies.fieldhelp',
+            1 => $error,
+          )));
+        }
+        if (!empty($fieldsToAddHelp)) {
+          $fields = array();
+          foreach ($fieldsToAddHelp as $key => $value) {
+            if ($form->elementExists($key)) {
+              $fields[$key] = $value;
+            }
+            // weird fields that need special attention
+            elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1') {
+              $fields[$key] = $value;
+            }
+          }
+          CRM_Core_Resources::singleton()->addVars('fieldhelp', array('fields' => $fields));
+          CRM_Core_Resources::singleton()->addScriptFile('com.aghstrategies.fieldhelp', 'js/fieldhelp.js');
+        }
+      }
+    }
   }
 }
 /**
