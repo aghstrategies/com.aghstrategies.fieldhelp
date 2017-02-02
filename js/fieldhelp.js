@@ -4,10 +4,6 @@ CRM.$(function ($) {
     console.log($fields);
     $.each($fields, function (key, value) {
       var $fieldInput = $('#' + key);
-      if (key == 'Email_Block_1') {
-        console.log($fieldInput);
-      }
-
       if (key == 'preferred_communication_method_1') {
         $('<div/>', {
           class: 'description',

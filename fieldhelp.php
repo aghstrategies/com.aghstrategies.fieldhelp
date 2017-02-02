@@ -47,7 +47,7 @@ function fieldhelp_civicrm_buildForm($formName, &$form) {
         $fields[$key] = $value;
       }
       // weird fields that need special attention
-      elseif ($key == 'Email_Block_1'|| $key == 'preferred_communication_method_1' || $key == 'address_1_location_type_id') {
+      elseif ($key == 'Email_Block_1'|| $key == 'website_1_url' || $key == 'Phone_Block_1' || $key == 'preferred_communication_method_1' || $key == 'address_1_location_type_id') {
         $fields[$key] = $value;
       }
     }
